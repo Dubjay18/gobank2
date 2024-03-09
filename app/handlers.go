@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -24,4 +25,13 @@ func getAllCustomers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(customers)
 
+}
+func getCustomer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	customer_id := vars["customer_id"]
+	fmt.Println(w, "customer_id:", customer_id)
+}
+
+func createCustomers(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Post request received")
 }
