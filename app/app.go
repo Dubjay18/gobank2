@@ -11,7 +11,8 @@ import (
 func Start() {
 	//mux := http.NewServeMux()
 
-	ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
+	//ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
+	ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryDB())}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)

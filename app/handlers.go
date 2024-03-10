@@ -20,7 +20,10 @@ type CustomerHandlers struct {
 
 func WriteJson(w http.ResponseWriter, i interface{}) {
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(i)
+	err := json.NewEncoder(w).Encode(i)
+	if err != nil {
+		return
+	}
 }
 func greet(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(w, "hello world!!")

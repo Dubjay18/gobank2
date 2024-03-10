@@ -15,6 +15,6 @@ func (s DefaultCustomerService) GetAllCustomers() ([]domain.Customer, error) {
 	return s.repo.FindAll()
 }
 
-func NewCustomerService(repo domain.CustomerRepositoryStub) DefaultCustomerService {
+func NewCustomerService(repo domain.CustomerRepositoryDB) DefaultCustomerService {
 	return DefaultCustomerService{repo}
 }
