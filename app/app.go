@@ -16,6 +16,7 @@ func Start() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
+	r.HandleFunc("/customers/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

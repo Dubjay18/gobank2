@@ -6,10 +6,6 @@ import (
 	"log"
 )
 
-type PostgresStorage struct {
-	db *sql.DB
-}
-
 type CustomerRepositoryDB struct {
 	db *sql.DB
 }
@@ -25,14 +21,29 @@ func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 	customers := make([]Customer, 0)
 	for rows.Next() {
 		var c Customer
-		err := rows.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateOfBirth, &c.Status)
+		err := rows.Scan(&c.Id, &c.Name, &c.DateOfBirth, &c.City, &c.Zipcode, &c.Status)
 		if err != nil {
 			log.Println("Error scanning customers", err)
 			return nil, err
 		}
+
 		customers = append(customers, c)
 	}
 	return customers, nil
+}
+
+func (d CustomerRepositoryDB) ById(id string) (*Customer, error) {
+	findPsql := "SELECT * FROM customers WHERE customer_id = $1"
+	row := d.db.QueryRow(findPsql, id)
+	var c Customer
+	err := row.Scan(&c.Id, &c.Name, &c.DateOfBirth, &c.City, &c.Zipcode, &c.Status)
+	if err != nil {
+		log.Println("Error scanning customers" + err.Error())
+		return nil, err
+	}
+
+	return &c, nil
+
 }
 
 func NewCustomerRepositoryDB() CustomerRepositoryDB {

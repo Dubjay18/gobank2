@@ -38,6 +38,13 @@ func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Reque
 	WriteJson(w, customers)
 
 }
+func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	customerId := vars["customer_id"]
+	customer, _ := ch.service.GetCustomer(customerId)
+	WriteJson(w, customer)
+
+}
 func getCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	customerId := vars["customer_id"]
