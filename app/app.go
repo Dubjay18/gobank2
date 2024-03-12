@@ -5,6 +5,7 @@ import (
 	"github.com/Dubjay18/gobank2/domain"
 	"github.com/Dubjay18/gobank2/service"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -26,11 +27,34 @@ func SanityCheck() {
 	}
 }
 
+func getDbClient() *sqlx.DB {
+	dbName := os.Getenv("DB_NAME")
+	dbPass := os.Getenv("DB_PASS")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	constr := "user=" + dbUser + " dbname=" + dbName + " password=" + dbPass + " host=" + dbHost + " port=" + dbPort + " sslmode=disable"
+	//
+	//constr := "user=postgres dbname=goBank2 password=qwertyuiop sslmode=disable"
+	db, err := sqlx.Open("postgres", constr)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := db.Ping(); err != nil {
+		panic(err)
+
+	}
+	return db
+}
+
 func Start() {
 	//mux := http.NewServeMux()
-
+	dbClient := getDbClient()
+	customerRepositoryDb := domain.NewCustomerRepositoryDB(dbClient)
+	//accountRepositoryDb := domain.NewAccountRepositoryDB(dbClient)
 	//ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
-	ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryDB())}
+	ch := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
