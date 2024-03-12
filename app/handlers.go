@@ -34,7 +34,12 @@ func greet(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(w, "hello world!!")
 }
 func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
-	customers, _ := ch.service.GetAllCustomers()
+	status := r.URL.Query().Get("status")
+	customers, err := ch.service.GetAllCustomers(status)
+	if err != nil {
+		WriteJson(w, err.AsMessage(), err.Code)
+		return
+	}
 	WriteJson(w, customers)
 
 }
@@ -43,7 +48,6 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 	customerId := vars["customer_id"]
 	customer, err := ch.service.GetCustomer(customerId)
 	if err != nil {
-
 		WriteJson(w, err.AsMessage(), err.Code)
 		return
 	}

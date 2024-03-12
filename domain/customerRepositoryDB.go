@@ -5,40 +5,41 @@ import (
 	"errors"
 	"github.com/Dubjay18/gobank2/errs"
 	"github.com/Dubjay18/gobank2/logger"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
+const (
+	findAllCustomersQuery         = "SELECT * FROM customers"
+	findAllCustomersByStatusQuery = "SELECT * FROM customers WHERE status = $1"
+	findCustomerByIdQuery         = "SELECT * FROM customers WHERE customer_id = $1"
+)
+
 type CustomerRepositoryDB struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
+func (d CustomerRepositoryDB) FindAll(status string) ([]Customer, *errs.AppError) {
+	customers := make([]Customer, 0)
+	var err error
 
-	findPsql := "SELECT * FROM customers"
-	rows, err := d.db.Query(findPsql)
+	if status == "" {
+		err = d.db.Select(&customers, findAllCustomersQuery)
+	} else {
+		err = d.db.Select(&customers, findAllCustomersByStatusQuery, status)
+
+	}
 	if err != nil {
 		logger.Error("Error querying customers" + err.Error())
-		return nil, err
+		return nil, errs.NewUnexpectedError("unexpected database error")
 	}
-	customers := make([]Customer, 0)
-	for rows.Next() {
-		var c Customer
-		err := rows.Scan(&c.Id, &c.Name, &c.DateOfBirth, &c.City, &c.Zipcode, &c.Status)
-		if err != nil {
-			logger.Error("Error scanning customers" + err.Error())
-			return nil, err
-		}
 
-		customers = append(customers, c)
-	}
 	return customers, nil
 }
 
 func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
-	findPsql := "SELECT * FROM customers WHERE customer_id = $1"
-	row := d.db.QueryRow(findPsql, id)
 	var c Customer
-	err := row.Scan(&c.Id, &c.Name, &c.DateOfBirth, &c.City, &c.Zipcode, &c.Status)
+	err := d.db.Get(&c, findCustomerByIdQuery, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.NewNotFoundError("customer not found")
@@ -54,7 +55,7 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 
 func NewCustomerRepositoryDB() CustomerRepositoryDB {
 	constr := "user=postgres dbname=goBank2 password=qwertyuiop sslmode=disable"
-	db, err := sql.Open("postgres", constr)
+	db, err := sqlx.Open("postgres", constr)
 	if err != nil {
 		panic(err)
 	}
