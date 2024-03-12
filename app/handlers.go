@@ -18,8 +18,13 @@ type CustomerHandlers struct {
 	service service.CustomerService
 }
 
-func WriteJson(w http.ResponseWriter, i interface{}) {
+func WriteJson(w http.ResponseWriter, i interface{}, code ...int) {
+	if code == nil {
+
+		code = append(code, http.StatusOK)
+	}
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code[0])
 	err := json.NewEncoder(w).Encode(i)
 	if err != nil {
 		return
@@ -29,11 +34,6 @@ func greet(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(w, "hello world!!")
 }
 func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
-	//customers := []Customer{
-	//	{Name: "John", City: "New York", Zipcode: "10001"},
-	//	{Name: "John", City: "New York", Zipcode: "10001"},
-	//	{Name: "John", City: "New York", Zipcode: "10001"},
-	//}
 	customers, _ := ch.service.GetAllCustomers()
 	WriteJson(w, customers)
 
@@ -41,7 +41,12 @@ func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Reque
 func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	customerId := vars["customer_id"]
-	customer, _ := ch.service.GetCustomer(customerId)
+	customer, err := ch.service.GetCustomer(customerId)
+	if err != nil {
+
+		WriteJson(w, err.AsMessage(), err.Code)
+		return
+	}
 	WriteJson(w, customer)
 
 }

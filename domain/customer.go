@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/Dubjay18/gobank2/errs"
+
 type Customer struct {
 	Id          string `json:"id"`
 	Name        string `json:"fullname"`
@@ -11,5 +13,5 @@ type Customer struct {
 
 type CustomerRepository interface {
 	FindAll() ([]Customer, error)
-	ById(string) (*Customer, error)
+	ById(string) (*Customer, *errs.AppError)
 }
