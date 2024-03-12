@@ -7,6 +7,7 @@ import (
 	"github.com/Dubjay18/gobank2/logger"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"os"
 )
 
 const (
@@ -54,7 +55,14 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 }
 
 func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	constr := "user=postgres dbname=goBank2 password=qwertyuiop sslmode=disable"
+	dbName := os.Getenv("DB_NAME")
+	dbPass := os.Getenv("DB_PASS")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	constr := "user=" + dbUser + " dbname=" + dbName + " password=" + dbPass + " host=" + dbHost + " port=" + dbPort + " sslmode=disable"
+	//
+	//constr := "user=postgres dbname=goBank2 password=qwertyuiop sslmode=disable"
 	db, err := sqlx.Open("postgres", constr)
 	if err != nil {
 		panic(err)

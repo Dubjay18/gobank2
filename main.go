@@ -7,6 +7,8 @@ import (
 
 func main() {
 	//log.Println("Starting the application...")
+	app.GetEnvVar()
 	logger.Info("Starting the application...")
+	app.SanityCheck()
 	app.Start()
 }
