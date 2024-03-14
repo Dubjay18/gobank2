@@ -34,8 +34,7 @@ func getDbClient() *sqlx.DB {
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	constr := "user=" + dbUser + " dbname=" + dbName + " password=" + dbPass + " host=" + dbHost + " port=" + dbPort + " sslmode=disable"
-	//
-	//constr := "user=postgres dbname=goBank2 password=qwertyuiop sslmode=disable"
+
 	db, err := sqlx.Open("postgres", constr)
 	if err != nil {
 		panic(err)
@@ -52,14 +51,14 @@ func Start() {
 	//mux := http.NewServeMux()
 	dbClient := getDbClient()
 	customerRepositoryDb := domain.NewCustomerRepositoryDB(dbClient)
-	//accountRepositoryDb := domain.NewAccountRepositoryDB(dbClient)
+	accountRepositoryDb := domain.NewAccountRepositoryDB(dbClient)
 	//ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
 	ch := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
-
+	ah := AccountHandler{service.NewAccountService(accountRepositoryDb)}
 	r := mux.NewRouter()
 	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
 	r.HandleFunc("/customers/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
-
+	r.HandleFunc("/customers/{customer_id:[0-9]+}/account", ah.NewAccount).Methods(http.MethodPost)
 	port := os.Getenv("SERVER_PORT")
 	address := os.Getenv("SERVER_ADDRESS")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", address, port), r))

@@ -1,6 +1,9 @@
 package domain
 
-import "github.com/Dubjay18/gobank2/errs"
+import (
+	"github.com/Dubjay18/gobank2/dto"
+	"github.com/Dubjay18/gobank2/errs"
+)
 
 type Account struct {
 	AccountId   string `db:"account_id"`
@@ -9,6 +12,10 @@ type Account struct {
 	AccountType string `db:"account_type"`
 	Amount      float64
 	Status      string
+}
+
+func (a Account) ToNewAccountResponseDto() dto.NewAccountResponse {
+	return dto.NewAccountResponse{AccountId: a.AccountId}
 }
 
 type AccountRepository interface {
