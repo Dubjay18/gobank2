@@ -9,6 +9,7 @@ import (
 
 type AccountService interface {
 	NewAccount(dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError)
+	MakeTransaction(dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -36,6 +37,35 @@ func (s DefaultAccountService) NewAccount(req dto.NewAccountRequest) (*dto.NewAc
 	return &response, nil
 }
 
+func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+	if req.IsWithdrawal() {
+		account, err := s.repo.ById(req.AccountId)
+
+		if err != nil {
+			return nil, err
+		}
+		if account.CanWithdraw(req.Amount) {
+			return nil, errs.NewValidationError("Insufficient balance")
+		}
+	}
+
+	t := domain.Transaction{
+		AccountId:       req.AccountId,
+		Amount:          req.Amount,
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format("2006-01-02 15:04:05"),
+	}
+	newTransaction, err := s.repo.SaveTransaction(t)
+	if err != nil {
+		return nil, err
+	}
+	response := newTransaction.ToDto()
+	return &response, nil
+}
 func NewAccountService(repo domain.AccountRepositoryDB) DefaultAccountService {
 	return DefaultAccountService{repo}
 }

@@ -59,6 +59,7 @@ func Start() {
 	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
 	r.HandleFunc("/customers/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
 	r.HandleFunc("/customers/{customer_id:[0-9]+}/account", ah.NewAccount).Methods(http.MethodPost)
+	r.HandleFunc("/customers/{customer_id:[0-9]+}/account/{account_id:[0-9]+}/transaction", ah.MakeTransaction).Methods(http.MethodPost)
 	port := os.Getenv("SERVER_PORT")
 	address := os.Getenv("SERVER_ADDRESS")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", address, port), r))
