@@ -56,10 +56,12 @@ func Start() {
 	ch := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
 	ah := AccountHandler{service.NewAccountService(accountRepositoryDb)}
 	r := mux.NewRouter()
-	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
-	r.HandleFunc("/customers/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
-	r.HandleFunc("/customers/{customer_id:[0-9]+}/account", ah.NewAccount).Methods(http.MethodPost)
-	r.HandleFunc("/customers/{customer_id:[0-9]+}/account/{account_id:[0-9]+}/transaction", ah.MakeTransaction).Methods(http.MethodPost)
+	r.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet).Name("GetAllCustomers")
+	r.HandleFunc("/customers/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet).Name("GetCustomer")
+	r.HandleFunc("/customers/{customer_id:[0-9]+}/account", ah.NewAccount).Methods(http.MethodPost).Name("NewAccount")
+	r.HandleFunc("/customers/{customer_id:[0-9]+}/account/{account_id:[0-9]+}/transaction", ah.MakeTransaction).Methods(http.MethodPost).Name("NewTransaction")
+	am := AuthMiddleware{domain.NewAuthRepository()}
+	r.Use(am.authorizationHandler())
 	port := os.Getenv("SERVER_PORT")
 	address := os.Getenv("SERVER_ADDRESS")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", address, port), r))
